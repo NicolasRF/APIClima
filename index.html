@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <title>Estado del tiempo</title>
+</head>
+
+<body>
+    <div class="container" id="WeatherApp">
+        <div class="jumbotron mt-3" style="background-color: #a8dda8;">
+            <h1 class="text-primary">Consultar el estado del tiempo para:</h1>
+            <select name="municipio" v-model="municipioSelected" class="form-control" @change="changeMunicipioData()">
+                <option value="1">Tegucigalpa</option>
+                <option value="2">San Pedro Sula</option>
+                <option value="3">Choloma</option>
+                <option value="4">Puerto Cortes</option>
+                <option value="5">La Ceiba</option>
+                <option value="6">El Progreso</option>
+                <option value="7">Comayagua</option>
+                <option value="8">Siguatepeque</option>
+                <option value="9">Tocoa</option>
+                <option value="10">Santa Rosa</option>
+                <option value="11">Juticalpa</option>
+                <option value="12">San Lorenzo</option>
+                <option value="13">Olanchito</option>
+                <option value="14">Yoro</option>
+                <option value="15">La Paz</option>
+                <option value="16">Talanga</option>
+                <option value="17">Santa Rita</option>
+                <option value="18">Trujillo</option>
+                <option value="19">San Marcos</option>
+                <option value="20">Nueva Ocotepeque</option>
+                <option value="21">Coxen Hole</option>
+            </select>
+            <hr class="my-4">
+            <div class="row ml-3" v-if="visibleData">
+                <h2 class="text-center w-100">
+                    Condiciones climáticas
+                    {{weatherData.current.weather[0].description}}
+                    <img v-bind:src="'http://openweathermap.org/img/wn/'+weatherData.current.weather[0].icon+'@2x.png'"
+                        class="img-responsive" style="margin-top: -20px;">
+                </h2>
+            </div>
+            <div class="card" style="background-color: #a8dda8;" v-if="visibleData">
+                <div class="card-body row">
+                    <div class="col-sm-12 col-md-4 w-100 text-center text-danger">
+                        <strong class="display-1 font-weight-bold">
+                            {{parseFloat(weatherData.current.temp).toFixed(0)}}<sup>o</sup>
+                        </strong>
+                        <h5 class="font-weight-normal">
+                            Actualizado a las {{convertUnixDateToNormal(weatherData.current.dt) }}
+                        </h5>
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-md-4">
+                        <small>
+                            <table class="table table-borderless w-100">
+                                <tbody>
+                                    <tr class="w-100">
+                                        <th class="w-50">Sensación térmica</th>
+                                        <td class="w-50">{{parseInt(weatherData.current.feels_like)}}<sup>o</sup></td>
+                                    </tr>
+                                    <tr class="w-100">
+                                        <th class="w-50">Velocidad del viento</th>
+                                        <td class="w-50">{{weatherData.current.wind_speed}} m/s</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-50">Humedad</th>
+                                        <td class="w-50">{{weatherData.current.humidity}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-50">Precipitación</th>
+                                        <td class="w-50">{{weatherData.current.clouds}}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-50">Punto de roció</th>
+                                        <td class="w-50">{{parseInt(weatherData.current.dew_point)}}<sup>o</sup></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </small>                        
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-md-4">
+                        <small>
+                            <table class="table table-borderless w-100">
+                                <tbody>
+                                    <tr class="w-100">
+                                        <th class="w-50">Visibilidad</th>
+                                        <td class="w-50">{{weatherData.current.visibility/1000}} Km </td>
+                                    </tr>
+                                    <tr class="w-100">
+                                        <th class="w-50">Amanecer</th>
+                                        <td class="w-50">{{convertUnixDateToHour(weatherData.current.sunrise)}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-50">Atardecer</th>
+                                        <td class="w-50">{{convertUnixDateToHour(weatherData.current.sunset)}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-50">Índice UV</th>
+                                        <td class="w-50">{{parseFloat(weatherData.current.uvi*10).toFixed(2)}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-50">Presión</th>
+                                        <td class="w-50">{{weatherData.current.pressure}} hPa</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </small>
+                    </div>
+                    <p class="card-text text-danger"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/js/all.min.js"
+        integrity="sha512-UwcC/iaz5ziHX7V6LjSKaXgCuRRqbTp1QHpbOJ4l1nw2/boCfZ2KlFIqBUA/uRVF0onbREnY9do8rM/uT/ilqw=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
+
+    <script type="text/javascript">
+        var WeatherVueApp = new Vue({
+            el: '#WeatherApp',
+            data: {
+                weatherData: [],
+                latitud: 0,
+                longitud: 0,
+                visibleData: false,
+                municipioSelected: 0,
+                municipioName: '',
+                fecha: '',
+            },
+            created: function () { },
+            methods: {
+                changeMunicipioData: function () {
+                    this.obtenerLatitudLongitud(parseInt(this.municipioSelected));
+                    this.getWeatherData();
+                },
+                obtenerLatitudLongitud: function (nMunicipio) {
+                    switch (nMunicipio) {
+                        case 1:
+                            this.municipioName = "Tegucigalpa";
+                            this.latitud = 14.0818;
+                            this.longitud = -87.20681;
+                            break;
+                        case 2:
+                            this.municipioName = "San Pedro Sula";
+                            this.latitud = 15.50417;
+                            this.longitud = -88.025;
+                            break;
+                        case 3:
+                            this.municipioName = "Choloma";
+                            this.latitud = 15.61444;
+                            this.longitud = -87.95302;
+                            break;
+                        case 4:
+                            this.municipioName = "Puerto Cortes";
+                            this.latitud = 15.82562;
+                            this.longitud = -87.92968;
+                            break;
+                        case 5:
+                            this.municipioName = "La Ceiba";
+                            this.latitud = 15.75971;
+                            this.longitud = -86.78221;
+                            break;
+                        case 6:
+                            this.municipioName = "El Progreso";
+                            this.latitud = 15.4;
+                            this.longitud = -87.8;
+                            break;
+                        case 7:
+                            this.municipioName = "Comayagua";
+                            this.latitud = 14.45139;
+                            this.longitud = -87.6375;
+                            break
+                        case 8:
+                            this.municipioName = "Siguatepeque";
+                            this.latitud = 14.6;
+                            this.longitud = -87.83333;
+                            break;
+                        case 9:
+                            this.municipioName = "Tocoa";
+                            this.latitud = 15.68333;
+                            this.longitud = -86;
+                            break;
+                        case 10:
+                            this.municipioName = "Santa Rosa";
+                            this.latitud = 14.76667;
+                            this.longitud = -88.77917;
+                            break
+                        case 11:
+                            this.municipioName = "Juticalpa";
+                            this.latitud = 14.66667;
+                            this.longitud = -86.21944;
+                            break
+                        case 12:
+                            this.municipioName = "San Lorenzo";
+                            this.latitud = 13.42417;
+                            this.longitud = -87.44722;
+                            break;
+                        case 13:
+                            this.municipioName = "Olanchito";
+                            this.latitud = 15.48131;
+                            this.longitud = -86.57415;
+                            break;
+                        case 14:
+                            this.municipioName = "Yoro";
+                            this.latitud = 15.1375;
+                            this.longitud = -87.12778;
+                            break;
+                        case 15:
+                            this.municipioName = "La Paz";
+                            this.latitud = 14.31944;
+                            this.longitud = -87.67917;
+                            break;
+                        case 16:
+                            this.municipioName = "Talanga";
+                            this.latitud = 14.4;
+                            this.longitud = -87.08333;
+                            break;
+                        case 17:
+                            this.municipioName = "Santa Rita";
+                            this.latitud = 15.16667;
+                            this.longitud = -87.28333;
+                            break;
+                        case 18:
+                            this.municipioName = "Trujillo";
+                            this.latitud = 15.91667;
+                            this.longitud = -85.95417;
+                            break;
+                        case 19:
+                            this.municipioName = "San Marcos";
+                            this.latitud = 13.43333;
+                            this.longitud = -86.8;
+                            break;
+                        case 20:
+                            this.municipioName = "Nueva Ocotepeque";
+                            this.latitud = 14.43333;
+                            this.longitud = -89.18333;
+                            break;
+                        default:
+                            this.municipioName = "Coxen Hole";
+                            this.latitud = 16.31759;
+                            this.longitud = -86.53793;
+                            break;
+                    }
+                },
+                getWeatherData: function () {
+                    var url = 'https://api.openweathermap.org/data/2.5/onecall?lat=' + this.latitud + '&lon=' + this.longitud + '&exclude=minutely,hourly,daily&appid=328e55cd38e63f2ca8f8742353b3ee7a&units=metric&lang=es';
+
+                    axios.get(url)
+                        .then(function (response) {
+                            WeatherVueApp.weatherData = response.data;
+                            WeatherVueApp.visibleData = true;
+                        });
+                },
+                convertUnixDateToNormal: function (fecha) {
+                    var UnixDate = new Date(fecha * 1000);
+                    var months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    var year = UnixDate.getFullYear();
+                    var month = months[UnixDate.getMonth()];
+                    var date = UnixDate.getDate();
+                    var hour = UnixDate.getHours();
+                    var min = UnixDate.getMinutes();
+                    var sec = UnixDate.getSeconds();
+                    var time = hour + ':' + min + ':' + sec + ' del ' + date + ' ' + month + ' ' + year + ' ';
+                    return time;
+                },
+                convertUnixDateToHour: function (fecha) {
+                    var UnixDate = new Date(fecha * 1000);
+                    var hour = UnixDate.getHours();
+                    var min = UnixDate.getMinutes();
+                    var sec = UnixDate.getSeconds();
+                    var time = hour + ':' + min + ':' + sec;
+                    return time;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
